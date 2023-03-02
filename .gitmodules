@@ -1,0 +1,3 @@
+[submodule "external/CanInitParser"]
+	path = external/CanInitParser
+	url = https://github.com/gle6ru381/CanInitParser
