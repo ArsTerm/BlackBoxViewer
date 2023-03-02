@@ -13,21 +13,18 @@ BlackBoxModel::BlackBoxModel() : context(getCanInitData())
 
 void BlackBoxModel::updateContext()
 {
-    QFile file(sourceFile.toLocalFile());
+    sourceFileObj.close();
+    sourceFileObj.setFileName(sourceFile.toLocalFile());
 
-    if (!file.open(QFile::ReadOnly)) {
+    if (!sourceFileObj.open(QFile::ReadOnly)) {
         assert(false);
     }
 
-    auto data = (ciparser::BBFrame*)file.map(0, file.size());
+    auto data = (ciparser::BBFrame*)sourceFileObj.map(0, sourceFileObj.size());
 
-    context.setData(data, file.size() / sizeof(*data));
-    auto value = context.handle("I52_frn");
+    context.setData(data, sourceFileObj.size() / sizeof(*data));
 
-    for (int i = 0; i < 100; i++) {
-        values[i] = *value;
-        context.incTick();
-    }
+    collectData();
 }
 
 ciparser::Context BlackBoxModel::getCanInitData()
@@ -47,6 +44,36 @@ ciparser::Context BlackBoxModel::getCanInitData()
     visitor.visit(parser.parse());
 
     return ciparser::Context(nullptr, 0, visitor.get_ids());
+}
+
+void BlackBoxModel::updatePosition(size_t newPos)
+{
+    qDebug() << "Update postion:" << context.position() << newPos;
+
+    if (context.position() > newPos) {
+        while (context.position() > newPos && context.position() != 0) {
+            context.decTick();
+        }
+    } else {
+        while (context.position() < newPos) {
+            context.incTick();
+        }
+    }
+
+    beginResetModel();
+    collectData();
+    endResetModel();
+
+    emit positionChanged();
+}
+
+void BlackBoxModel::collectData()
+{
+    auto value = context.handle("I52_frn");
+    for (int i = 0; i < 100; i++) {
+        values[i] = *value;
+        context.incTick();
+    }
 }
 
 int BlackBoxModel::rowCount(const QModelIndex& parent) const

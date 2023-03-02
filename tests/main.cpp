@@ -13,6 +13,8 @@ int main(int argc, char* argv[])
 
     QQmlApplicationEngine engine;
 
+    qRegisterMetaType<size_t>("size_t");
+
     qmlRegisterType<BlackBoxModel>("BBViewer", 1, 0, "BBModel");
 
     QUrl component("qrc:/qml/main.qml");
@@ -29,7 +31,7 @@ int main(int argc, char* argv[])
     frame.id = 83;
     frame.time = ciparser::BBTime();
 
-    for (int i = 0; i < 50; i++) {
+    for (int i = 0; i < 65; i++) {
         for (int j = 0; j < 8; j++) {
             frame.data.byte[j] = val;
         }

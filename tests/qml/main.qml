@@ -13,16 +13,66 @@ Window {
         x: parent.width / 4
         y: parent.height / 4
         width: parent.width / 2
-        height: parent.height /2
+        height: parent.height / 2
         orientation: ListView.Horizontal
+        interactive: false
+        property real valueHeight: height / 255
+        Component.onCompleted: console.log("Value height:", valueHeight)
         model: BBModel {
+            id: model
             source: "file:C:\\Projects\\BlackBoxViewer\\build\\Desktop_Qt_5_15_2_MSVC2019_64bit\\tests\\BBtest.bin"
+            onPositionChanged: console.log("Model position:", model.position)
         }
+
+        MouseArea {
+            anchors.fill: parent
+            property real xBegin
+            onPressed: xBegin = mouse.x
+            onPositionChanged: {
+                console.log("Position changed:", mouse.x - xBegin)
+                let positionStep = Math.round((mouse.x - xBegin) / 10)
+                if (positionStep > 0) {
+                    xBegin = mouse.x
+                }
+
+                if (model.position + positionStep <= 0) {
+                    model.position = 0
+                } else {
+                    model.position += positionStep
+                }
+            }
+        }
+
         delegate: Rectangle {
             color: "green"
-            y: view.height - display
-            width: 5
-            height: 5
+            y: view.height / 2 - display * view.valueHeight - height / 4
+            width: view.width / 100
+            height: 3
+        }
+        Rectangle {
+            color: "transparent"
+            width: parent.width
+            height: parent.height
+            border.color: "white"
+            border.width: 1
+        }
+        Rectangle {
+            color: "#555555"
+            width: parent.width
+            height: 1
+            y: parent.height / 2
+        }
+        Rectangle {
+            color: "#555555"
+            width: parent.width
+            height: 1
+            y: parent.height / 4
+        }
+        Rectangle {
+            color: "#555555"
+            width: parent.width
+            height: 1
+            y: parent.height / 2 + parent.height / 4
         }
     }
 }
