@@ -1,0 +1,14 @@
+include(CompileOptions)
+
+set(target_name BlackBoxViewer)
+
+find_package(Qt5 REQUIRED COMPONENTS Core Quick REQUIRED)
+
+add_library(${target_name} STATIC)
+target_compile_definitions(${target_name} PRIVATE BLACKBOXVIEWER_LIBRARY)
+target_sources(${target_name} PRIVATE blackboxviewer_global.h blackboxmodel.cpp blackboxmodel.h)
+
+target_link_libraries(${target_name} PRIVATE Qt5::Core Qt5::Quick)
+target_link_libraries(${target_name} PRIVATE CanInitParser)
+
+target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/external/CanInitParser/src/CanInitParser)
