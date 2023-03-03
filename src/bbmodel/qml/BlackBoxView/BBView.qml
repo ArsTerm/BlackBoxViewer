@@ -1,15 +1,52 @@
 import BBViewer 1.0
 import QtQuick 2.0
+import QtQuick.Controls 2.15
 
 Item {
     property alias bbSource: model.source
     property alias value: model.value
+    property real topPadding: 50
     property real labelHeight: 50
+
+    TextInput {
+        z: 10
+        text: value
+        x: 5
+        width: parent.width / 2
+        height: topPadding
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignLeft
+        font.preferShaping: false
+        font.pixelSize: 25
+//      fontSizeMode: Text.Fit
+        color: "white"
+        onAccepted: {
+            if (model.contains(text)) {
+                value = text
+            } else {
+                text = value
+            }
+        }
+    }
+
+    Text {
+        text: "padding: " + 1
+        x: parent.width / 2 + 5
+        width: parent.width - x
+        height: topPadding
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        color: "white"
+    }
 
     ListView {
         id: view
+        y: topPadding
         width: parent.width
-        height: parent.height - labelHeight
+        height: parent.height - labelHeight - y
         orientation: ListView.Horizontal
         interactive: false
         property real valueHeight: height / 255
@@ -65,7 +102,7 @@ Item {
 
     Text {
         text: model.position
-        y: view.height
+        y: view.height + topPadding
         height: parent.labelHeight
         width: height * 2
         font.preferShaping: false
@@ -78,7 +115,7 @@ Item {
 
     Text {
         text: model.position + 100
-        y: view.height
+        y: view.height + topPadding
         x: parent.width - width
         height: parent.labelHeight
         width: height * 2
@@ -92,6 +129,7 @@ Item {
 
     Rectangle {
         z: -1
+        y: topPadding
         color: "black"
         width: parent.width
         height: view.height + 1

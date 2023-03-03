@@ -56,6 +56,13 @@ void BlackBoxModel::setPosition(size_t newPos)
     emit positionChanged();
 }
 
+bool BlackBoxModel::contains(const QString& value) const
+{
+    if (!handle)
+        return false;
+    return handle->contains(value.toStdString());
+}
+
 int BlackBoxModel::rowCount(const QModelIndex&) const
 {
     return padSize;

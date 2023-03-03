@@ -60,6 +60,8 @@ public:
         }
     }
 
+    Q_INVOKABLE bool contains(QString const& value) const;
+
 private:
     QUrl sourceFile;
     QFile sourceFileObj;

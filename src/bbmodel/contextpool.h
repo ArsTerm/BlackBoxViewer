@@ -34,6 +34,8 @@ public:
         return context.endTime().toTicks();
     }
 
+    bool contains(std::string const& value);
+
     ciparser::ValuesArray const&
     value(std::string const& name, size_t position);
 

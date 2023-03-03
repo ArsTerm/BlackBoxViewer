@@ -30,6 +30,11 @@ ContextHandle::ContextHandle(QString const& bbName, QString const& ciName)
             bbdata, bbFile.size() / sizeof(*bbdata), visitor.get_ids());
 }
 
+bool ContextHandle::contains(const std::string& value)
+{
+    return !context.handle(value).isNull();
+}
+
 const ciparser::ValuesArray&
 ContextHandle::value(const std::string& name, size_t position)
 {
