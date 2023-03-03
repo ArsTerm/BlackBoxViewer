@@ -17,11 +17,10 @@ Window {
         orientation: ListView.Horizontal
         interactive: false
         property real valueHeight: height / 255
-        Component.onCompleted: console.log("Value height:", valueHeight)
         model: BBModel {
             id: model
             source: "file:C:\\Projects\\02171842"
-            onPositionChanged: console.log("Model position:", model.position)
+            value: "c_secs"
         }
 
         MouseArea {
@@ -29,8 +28,7 @@ Window {
             property real xBegin
             onPressed: xBegin = mouse.x
             onPositionChanged: {
-                console.log("Position changed:", mouse.x - xBegin)
-                let positionStep = Math.round((mouse.x - xBegin) / 10)
+                let positionStep = Math.round((mouse.x - xBegin) * 10)
                 if (positionStep > 0) {
                     xBegin = mouse.x
                 }

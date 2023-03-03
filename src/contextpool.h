@@ -29,6 +29,11 @@ public:
         return context.beginTime().toTicks();
     }
 
+    size_t end() const
+    {
+        return context.endTime().toTicks();
+    }
+
     ciparser::ValuesArray const&
     value(std::string const& name, size_t position);
 

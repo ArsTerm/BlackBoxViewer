@@ -12,3 +12,5 @@ target_link_libraries(${target_name} PRIVATE Qt5::Core Qt5::Quick)
 target_link_libraries(${target_name} PRIVATE CanInitParser)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/external/CanInitParser/src/CanInitParser)
+
+set_compile_options(${target_name})

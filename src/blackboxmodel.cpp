@@ -25,71 +25,38 @@ void BlackBoxModel::updateContext()
 
     emit sourceChanged();
     setPosition(handle->begin());
-    //    sourceFileObj.close();
-    //    sourceFileObj.setFileName(sourceFile.toLocalFile());
-
-    //    if (!sourceFileObj.open(QFile::ReadOnly)) {
-    //        assert(false);
-    //    }
-
-    //    auto data = (ciparser::BBFrame*)sourceFileObj.map(0,
-    //    sourceFileObj.size());
-
-    //    context.setData(data, sourceFileObj.size() / sizeof(*data));
-
-    //    collectData();
 }
 
-ciparser::Context BlackBoxModel::getCanInitData()
+void BlackBoxModel::updateValue()
 {
-    QFile file(QStringLiteral(CANINIT_TEST_PATH));
+    if (!handle)
+        return;
+    beginResetModel();
+    values = &handle->value(m_value.toStdString(), currPosition + padSize);
+    endResetModel();
+    emit valueChanged();
+}
 
-    if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        assert(false);
+void BlackBoxModel::setPosition(size_t newPos)
+{
+    if (!handle)
+        return;
+    qDebug() << "Set position:" << newPos;
+    if (newPos < handle->begin()) {
+        newPos = handle->begin();
+    } else if (newPos + padSize > handle->end()) {
+        newPos = handle->end() - padSize;
     }
-    auto data = (char*)file.map(0, file.size());
-
-    ciparser::CanInitParser parser(
-            std::make_unique<ciparser::CanInitLexer>(data, file.size()));
-
-    ciparser::CanInitVisitor visitor;
-
-    visitor.visit(parser.parse());
-
-    return ciparser::Context(nullptr, 0, visitor.get_ids());
-}
-
-void BlackBoxModel::updatePosition(size_t newPos)
-{
-    //    qDebug() << "Update postion:" << context.position() << newPos;
-
-    //    context.reset();
-
-    //    while (context.position() != newPos)
-    //        context.incTick();
-
-    //    beginResetModel();
-    //    collectData();
-    //    endResetModel();
-
+    currPosition = newPos;
+    if (!m_value.isNull()) {
+        beginResetModel();
+        values = &handle->value(m_value.toStdString(), newPos + padSize);
+        endResetModel();
+    }
     emit positionChanged();
 }
 
-void BlackBoxModel::collectData()
-{
-    //    auto value = context.handle("I_Can");
-    //    values.reset();
-
-    //    values.insert(context.position(), *value);
-
-    //    for (int i = 0; i < padSize; i++) {
-    //        if (context.incTick()) {
-    //            values.insert(context.position(), *value);
-    //        }
-    //    }
-}
-
-int BlackBoxModel::rowCount(const QModelIndex& parent) const
+int BlackBoxModel::rowCount(const QModelIndex&) const
 {
     return padSize;
 }

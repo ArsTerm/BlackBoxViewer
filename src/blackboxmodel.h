@@ -16,6 +16,7 @@ class BlackBoxModel : public QAbstractListModel {
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
     Q_PROPERTY(size_t position READ position WRITE setPosition NOTIFY
                        positionChanged)
+    Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
 public:
     BlackBoxModel();
 
@@ -24,7 +25,6 @@ public:
         if (sourceFile != source) {
             sourceFile = source;
             updateContext();
-            emit sourceChanged();
         }
     }
 
@@ -38,18 +38,7 @@ public:
         return currPosition;
     }
 
-    void setPosition(size_t newPos)
-    {
-        qDebug() << "Set position:" << newPos;
-        if (newPos < handle->begin()) {
-            newPos = handle->begin();
-        }
-        currPosition = newPos;
-        beginResetModel();
-        values = &handle->value("I91_frn", newPos + padSize);
-        endResetModel();
-        emit positionChanged();
-    }
+    void setPosition(size_t newPos);
 
     ~BlackBoxModel() override
     {
@@ -58,19 +47,31 @@ public:
         }
     }
 
+    QString const& value() const
+    {
+        return m_value;
+    }
+
+    void setValue(QString const& val)
+    {
+        if (val != m_value) {
+            m_value = val;
+            updateValue();
+        }
+    }
+
 private:
     QUrl sourceFile;
     QFile sourceFileObj;
     size_t currPosition = 0;
+    QString m_value;
     ContextHandle* handle = nullptr;
     ciparser::ValuesArray const* values = nullptr;
     static constexpr size_t padSize = 100;
     static ContextPool cpool;
 
     void updateContext();
-    ciparser::Context getCanInitData();
-    void updatePosition(size_t newPos);
-    void collectData();
+    void updateValue();
 
     // QAbstractItemModel interface
 public:
@@ -80,6 +81,7 @@ public:
 signals:
     void sourceChanged();
     void positionChanged();
+    void valueChanged();
 };
 
 BBVIEWER_END_NS
