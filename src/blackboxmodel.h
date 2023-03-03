@@ -34,12 +34,14 @@ public:
 
     size_t position() const
     {
-        return context.position() - 100;
+        return context.position() - padSize;
     }
 
     void setPosition(size_t newPos)
     {
         qDebug() << "Set position:" << newPos;
+        if (newPos < context.beginTime().toTicks())
+            newPos = context.beginTime().toTicks();
         if (newPos + 100 != context.position()) {
             updatePosition(newPos);
         }
@@ -49,7 +51,8 @@ private:
     QUrl sourceFile;
     QFile sourceFileObj;
     ciparser::Context context;
-    int values[100];
+    ciparser::ValuesArray values;
+    static constexpr size_t padSize = 100;
 
     void updateContext();
     ciparser::Context getCanInitData();

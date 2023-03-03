@@ -50,15 +50,10 @@ void BlackBoxModel::updatePosition(size_t newPos)
 {
     qDebug() << "Update postion:" << context.position() << newPos;
 
-    if (context.position() > newPos) {
-        while (context.position() > newPos && context.position() != 0) {
-            context.decTick();
-        }
-    } else {
-        while (context.position() < newPos) {
-            context.incTick();
-        }
-    }
+    context.reset();
+
+    while (context.position() != newPos)
+        context.incTick();
 
     beginResetModel();
     collectData();
@@ -69,16 +64,21 @@ void BlackBoxModel::updatePosition(size_t newPos)
 
 void BlackBoxModel::collectData()
 {
-    auto value = context.handle("I52_frn");
-    for (int i = 0; i < 100; i++) {
-        values[i] = *value;
-        context.incTick();
+    auto value = context.handle("I_Can");
+    values.reset();
+
+    values.insert(context.position(), *value);
+
+    for (int i = 0; i < padSize; i++) {
+        if (context.incTick()) {
+            values.insert(context.position(), *value);
+        }
     }
 }
 
 int BlackBoxModel::rowCount(const QModelIndex& parent) const
 {
-    return std::size(values);
+    return padSize;
 }
 
 QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
@@ -87,7 +87,7 @@ QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
     case Qt::DisplayRole:
-        return values[idx];
+        return values[context.position() - padSize + idx];
     }
     return QVariant();
 }

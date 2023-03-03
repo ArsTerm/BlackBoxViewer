@@ -20,7 +20,7 @@ Window {
         Component.onCompleted: console.log("Value height:", valueHeight)
         model: BBModel {
             id: model
-            source: "file:C:\\Projects\\BlackBoxViewer\\build\\Desktop_Qt_5_15_2_MSVC2019_64bit\\tests\\BBtest.bin"
+            source: "file:C:\\Projects\\02171842"
             onPositionChanged: console.log("Model position:", model.position)
         }
 
@@ -41,6 +41,28 @@ Window {
                     model.position += positionStep
                 }
             }
+        }
+
+        Text {
+            y: view.height
+            x: -width / 2
+            text: model.position
+            width: 100
+            height: 50
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            color: "white"
+        }
+
+        Text {
+            text: model.position + 100
+            y: view.height
+            x: view.width - width / 2
+            width: 100
+            height: 50
+            verticalAlignment: Text.AlignVCenter
+            horizontalAlignment: Text.AlignHCenter
+            color: "white"
         }
 
         delegate: Rectangle {

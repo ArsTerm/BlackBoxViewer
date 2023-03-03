@@ -20,15 +20,16 @@ int main(int argc, char* argv[])
     QUrl component("qrc:/qml/main.qml");
     QQmlComponent comp(&engine, component);
 
-    QFile file("BBtest.bin");
+    QFile file("C:\\Projects\\BBtest.bin");
 
     file.open(QFile::ReadWrite);
+    file.resize(0);
 
     ciparser::BBFrame frame;
 
     uint8_t val = 0;
 
-    frame.id = 83;
+    frame.id = 84;
     frame.time = ciparser::BBTime();
 
     for (int i = 0; i < 65; i++) {
@@ -36,8 +37,11 @@ int main(int argc, char* argv[])
             frame.data.byte[j] = val;
         }
         file.write((char*)&frame, sizeof(frame));
-        frame.time = ciparser::BBTime(frame.time, 1);
-        val++;
+        frame.id = 85;
+        file.write((char*)&frame, sizeof(frame));
+        frame.id = 84;
+        frame.time = ciparser::BBTime(frame.time, 3);
+        val += 5;
     }
 
     file.close();
