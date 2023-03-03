@@ -1,3 +1,4 @@
+#include <QDir>
 #include <QFile>
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
@@ -11,7 +12,15 @@ int main(int argc, char* argv[])
     QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QGuiApplication app(argc, argv);
 
+    Q_INIT_RESOURCE(qmltypes);
+
     QQmlApplicationEngine engine;
+
+    engine.addImportPath(":/qml");
+
+    QDir dir(":/qml");
+
+    qDebug() << "Dir entry:" << dir.entryList();
 
     qRegisterMetaType<size_t>("size_t");
 

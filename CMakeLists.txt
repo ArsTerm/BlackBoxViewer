@@ -11,6 +11,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 add_compile_definitions(CANINIT_TEST_PATH="${CMAKE_CURRENT_LIST_DIR}/external/CanInitParser/CanInit.h")
+add_compile_definitions(BBVIEWER_QML_PATH="${CMAKE_CURRENT_LIST_DIR}/src/bbmodel")
 
 add_subdirectory(src)
 add_subdirectory(tests)
