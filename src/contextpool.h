@@ -2,7 +2,9 @@
 
 #include "blackboxviewer_global.h"
 #include <Context/context.h>
+#include <Context/types/valuesarray.h>
 #include <QFile>
+#include <unordered_map>
 
 BBVIEWER_BEGIN_NS
 
@@ -11,8 +13,6 @@ class ContextHandle {
 
 public:
     ContextHandle(QString const& bbName, QString const& ciName);
-
-    ciparser::Context& get();
 
     bool equal(QString const& bbName, QString const& ciName) const
     {
@@ -24,7 +24,20 @@ public:
         return l.equal(r.bbFile.fileName(), r.ciFile.fileName());
     }
 
+    size_t begin() const
+    {
+        return context.beginTime().toTicks();
+    }
+
+    ciparser::ValuesArray const&
+    value(std::string const& name, size_t position);
+
 private:
+    struct Data {
+        size_t endPosition = 0;
+        ciparser::ValuesArray array;
+    };
+    std::unordered_map<std::string, Data> data;
     ciparser::Context context;
     QFile bbFile;
     QFile ciFile;

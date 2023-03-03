@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackboxviewer_global.h"
+#include "contextpool.h"
 #include <Context/context.h>
 #include <QAbstractListModel>
 #include <QDebug>
@@ -34,25 +35,37 @@ public:
 
     size_t position() const
     {
-        return context.position() - padSize;
+        return currPosition;
     }
 
     void setPosition(size_t newPos)
     {
         qDebug() << "Set position:" << newPos;
-        if (newPos < context.beginTime().toTicks())
-            newPos = context.beginTime().toTicks();
-        if (newPos + 100 != context.position()) {
-            updatePosition(newPos);
+        if (newPos < handle->begin()) {
+            newPos = handle->begin();
+        }
+        currPosition = newPos;
+        beginResetModel();
+        values = &handle->value("I91_frn", newPos + padSize);
+        endResetModel();
+        emit positionChanged();
+    }
+
+    ~BlackBoxModel() override
+    {
+        if (handle) {
+            cpool.free(handle);
         }
     }
 
 private:
     QUrl sourceFile;
     QFile sourceFileObj;
-    ciparser::Context context;
-    ciparser::ValuesArray values;
+    size_t currPosition = 0;
+    ContextHandle* handle = nullptr;
+    ciparser::ValuesArray const* values = nullptr;
     static constexpr size_t padSize = 100;
+    static ContextPool cpool;
 
     void updateContext();
     ciparser::Context getCanInitData();

@@ -1,5 +1,6 @@
 #include "contextpool.h"
 #include <Parser/caninitparser.h>
+#include <QDebug>
 #include <Visitor/caninitvisitor.h>
 
 BBVIEWER_BEGIN_NS
@@ -25,8 +26,31 @@ ContextHandle::ContextHandle(QString const& bbName, QString const& ciName)
 
     auto bbdata = (ciparser::BBFrame*)bbFile.map(0, bbFile.size());
 
-    context = ciparser::Context(
+    new (&context) ciparser::Context(
             bbdata, bbFile.size() / sizeof(*bbdata), visitor.get_ids());
+}
+
+const ciparser::ValuesArray&
+ContextHandle::value(const std::string& name, size_t position)
+{
+    auto& val = data[name];
+
+    if (val.endPosition < position) {
+        if (val.endPosition != context.position()) {
+            val.array.reset();
+            context.reset();
+        }
+        auto handle = context.handle(name);
+        val.array.insert(context.position(), *handle);
+        while (context.position() != position) {
+            if (context.incTick()) {
+                val.array.insert(context.position(), *handle);
+            }
+        }
+        val.endPosition = context.position();
+    }
+
+    return val.array;
 }
 
 ContextHandle* ContextPool::get(QString const& bbName, QString const& ciName)

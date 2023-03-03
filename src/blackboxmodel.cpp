@@ -7,24 +7,37 @@
 
 BBVIEWER_BEGIN_NS
 
-BlackBoxModel::BlackBoxModel() : context(getCanInitData())
+ContextPool BlackBoxModel::cpool;
+
+BlackBoxModel::BlackBoxModel()
 {
 }
 
 void BlackBoxModel::updateContext()
 {
-    sourceFileObj.close();
-    sourceFileObj.setFileName(sourceFile.toLocalFile());
-
-    if (!sourceFileObj.open(QFile::ReadOnly)) {
-        assert(false);
+    beginResetModel();
+    if (handle) {
+        cpool.free(handle);
     }
+    handle = cpool.get(
+            sourceFile.toLocalFile(), QStringLiteral(CANINIT_TEST_PATH));
+    endResetModel();
 
-    auto data = (ciparser::BBFrame*)sourceFileObj.map(0, sourceFileObj.size());
+    emit sourceChanged();
+    setPosition(handle->begin());
+    //    sourceFileObj.close();
+    //    sourceFileObj.setFileName(sourceFile.toLocalFile());
 
-    context.setData(data, sourceFileObj.size() / sizeof(*data));
+    //    if (!sourceFileObj.open(QFile::ReadOnly)) {
+    //        assert(false);
+    //    }
 
-    collectData();
+    //    auto data = (ciparser::BBFrame*)sourceFileObj.map(0,
+    //    sourceFileObj.size());
+
+    //    context.setData(data, sourceFileObj.size() / sizeof(*data));
+
+    //    collectData();
 }
 
 ciparser::Context BlackBoxModel::getCanInitData()
@@ -48,32 +61,32 @@ ciparser::Context BlackBoxModel::getCanInitData()
 
 void BlackBoxModel::updatePosition(size_t newPos)
 {
-    qDebug() << "Update postion:" << context.position() << newPos;
+    //    qDebug() << "Update postion:" << context.position() << newPos;
 
-    context.reset();
+    //    context.reset();
 
-    while (context.position() != newPos)
-        context.incTick();
+    //    while (context.position() != newPos)
+    //        context.incTick();
 
-    beginResetModel();
-    collectData();
-    endResetModel();
+    //    beginResetModel();
+    //    collectData();
+    //    endResetModel();
 
     emit positionChanged();
 }
 
 void BlackBoxModel::collectData()
 {
-    auto value = context.handle("I_Can");
-    values.reset();
+    //    auto value = context.handle("I_Can");
+    //    values.reset();
 
-    values.insert(context.position(), *value);
+    //    values.insert(context.position(), *value);
 
-    for (int i = 0; i < padSize; i++) {
-        if (context.incTick()) {
-            values.insert(context.position(), *value);
-        }
-    }
+    //    for (int i = 0; i < padSize; i++) {
+    //        if (context.incTick()) {
+    //            values.insert(context.position(), *value);
+    //        }
+    //    }
 }
 
 int BlackBoxModel::rowCount(const QModelIndex& parent) const
@@ -83,11 +96,13 @@ int BlackBoxModel::rowCount(const QModelIndex& parent) const
 
 QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
 {
+    if (!values || !handle)
+        return QVariant();
     int idx = index.row();
 
     switch (role) {
     case Qt::DisplayRole:
-        return values[context.position() - padSize + idx];
+        return (*values)[currPosition + idx];
     }
     return QVariant();
 }
