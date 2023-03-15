@@ -17,6 +17,7 @@ class BlackBoxModel : public QAbstractListModel {
     Q_PROPERTY(size_t position READ position WRITE setPosition NOTIFY
                        positionChanged)
     Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
+    Q_PROPERTY(int step READ step WRITE setStep NOTIFY stepChanged)
 public:
     BlackBoxModel();
 
@@ -60,20 +61,29 @@ public:
         }
     }
 
+    int step() const
+    {
+        return m_step;
+    }
+
+    void setStep(int value);
+
     Q_INVOKABLE bool contains(QString const& value) const;
 
 private:
     QUrl sourceFile;
     QFile sourceFileObj;
-    size_t currPosition = 0;
+    size_t currPosition = -1;
     QString m_value;
     ContextHandle* handle = nullptr;
     ciparser::ValuesArray const* values = nullptr;
+    int m_step = 1;
     static constexpr size_t padSize = 100;
     static ContextPool cpool;
 
     void updateContext();
     void updateValue();
+    void updateValues();
 
     // QAbstractItemModel interface
 public:
@@ -84,6 +94,7 @@ signals:
     void sourceChanged();
     void positionChanged();
     void valueChanged();
+    void stepChanged();
 };
 
 BBVIEWER_END_NS

@@ -10,9 +10,17 @@ Window {
 
     BBView {
         x: parent.width / 4
-        y: parent.height /4
         width: parent.width / 2
         height: parent.height / 2
+        bbSource: "file:C:\\Projects\\BBtest.bin"
+        value: "I_Can"
+    }
+
+    BBView {
+        x: parent.width / 4
+        y: parent.height / 2 + 5
+        height: parent.height / 2 - 5
+        width: parent.width / 2
         bbSource: "file:C:\\Projects\\BBtest.bin"
         value: "I_Can"
     }

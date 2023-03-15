@@ -29,8 +29,8 @@ Item {
         }
     }
 
-    Text {
-        text: "padding: " + 1
+    TextInput {
+        text: model.step
         x: parent.width / 2 + 5
         width: parent.width - x
         height: topPadding
@@ -38,8 +38,12 @@ Item {
         horizontalAlignment: Text.AlignRight
         font.preferShaping: false
         font.pixelSize: 25
-        fontSizeMode: Text.Fit
+//        fontSizeMode: Text.Fit
         color: "white"
+        onAccepted: {
+            model.step = text
+            console.log("Model step:", model.step)
+        }
     }
 
     ListView {
@@ -114,7 +118,7 @@ Item {
     }
 
     Text {
-        text: model.position + 100
+        text: model.position + 100 * model.step
         y: view.height + topPadding
         x: parent.width - width
         height: parent.labelHeight

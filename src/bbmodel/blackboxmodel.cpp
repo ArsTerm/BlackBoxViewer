@@ -31,29 +31,49 @@ void BlackBoxModel::updateValue()
 {
     if (!handle)
         return;
-    beginResetModel();
-    values = &handle->value(m_value.toStdString(), currPosition + padSize);
-    endResetModel();
+    updateValues();
     emit valueChanged();
+}
+
+void BlackBoxModel::updateValues()
+{
+    beginResetModel();
+    values = &handle->value(
+            m_value.toStdString(), currPosition + padSize * m_step);
+    endResetModel();
 }
 
 void BlackBoxModel::setPosition(size_t newPos)
 {
-    if (!handle)
+    if (!handle || newPos == currPosition)
         return;
     qDebug() << "Set position:" << newPos;
-    if (newPos < handle->begin()) {
+    if (padSize * m_step > handle->end()) {
+        newPos = 0;
+    } else if (newPos < handle->begin()) {
         newPos = handle->begin();
-    } else if (newPos + padSize > handle->end()) {
-        newPos = handle->end() - padSize;
+    } else if (newPos + padSize * m_step > handle->end()) {
+        newPos = handle->end() - padSize * m_step;
     }
     currPosition = newPos;
     if (!m_value.isNull()) {
-        beginResetModel();
-        values = &handle->value(m_value.toStdString(), newPos + padSize);
-        endResetModel();
+        updateValues();
     }
     emit positionChanged();
+}
+
+void BlackBoxModel::setStep(int value)
+{
+    if (m_step != value) {
+        m_step = value;
+        if (handle) {
+            if (padSize * m_step > handle->end())
+                setPosition(0);
+        }
+        if (!m_value.isNull())
+            updateValues();
+        emit stepChanged();
+    }
 }
 
 bool BlackBoxModel::contains(const QString& value) const
@@ -76,7 +96,7 @@ QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
     case Qt::DisplayRole:
-        return (*values)[currPosition + idx];
+        return (*values)[currPosition + idx * m_step];
     }
     return QVariant();
 }
