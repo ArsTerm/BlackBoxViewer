@@ -44,6 +44,10 @@ Item {
             font.preferShaping: false
             font.pixelSize: 25
             color: "black"
+            onFocusChanged: {
+                choisedName(name)
+            }
+
             onTextChanged: {
                 nameView.model.setTemplate(text)
             }

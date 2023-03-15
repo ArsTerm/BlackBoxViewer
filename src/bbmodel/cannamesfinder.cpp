@@ -53,6 +53,7 @@ void bbviewer::CanNamesFinder::setTemplate(const QString& t)
     filterTemplateData();
 }
 
+// To-do Оптимизировать алгоритм для addSymbol
 void bbviewer::CanNamesFinder::filterTemplateData()
 {
     beginResetModel();

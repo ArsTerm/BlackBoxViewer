@@ -110,9 +110,7 @@ QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-BBVIEWER_END_NS
-
-QHash<int, QByteArray> bbviewer::BlackBoxModel::roleNames() const
+QHash<int, QByteArray> BlackBoxModel::roleNames() const
 {
     QHash<int, QByteArray> roles;
     roles[Qt::DisplayRole] = "display";
@@ -120,3 +118,5 @@ QHash<int, QByteArray> bbviewer::BlackBoxModel::roleNames() const
 
     return roles;
 }
+
+BBVIEWER_END_NS

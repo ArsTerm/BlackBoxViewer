@@ -86,7 +86,6 @@ public:
     }
 
     Q_INVOKABLE QObject* finder() const;
-
     Q_INVOKABLE bool contains(QString const& value) const;
 
 private:

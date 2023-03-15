@@ -39,6 +39,16 @@ Item {
         }
     }
 
+    MouseArea {
+        x: parent.width / 2 - width / 2
+        width: 100
+        height: 50
+        onClicked: {
+            console.log("Set sign");
+            model.setSign(true)
+        }
+    }
+
     ListView {
         id: view
         y: topPadding
@@ -63,10 +73,13 @@ Item {
             }
             Rectangle {
                 color: "green"
-                y: Math.floor(-(nextValue < display ? display * view.valueHeight : nextValue * view.valueHeight) + view.height / 2)
+                y: Math.floor(
+                       -(nextValue < display ? display * view.valueHeight : nextValue
+                                               * view.valueHeight) + view.height / 2)
                 x: Math.min(1, parent.width - 3)
                 width: 3
-                height: Math.abs((display - nextValue)) * view.valueHeight + (nextValue < display ? view.valueHeight * 3 : 0)
+                height: Math.abs((display - nextValue)) * view.valueHeight
+                        + (nextValue < display ? view.valueHeight * 3 : 0)
             }
         }
 
