@@ -23,5 +23,6 @@ Window {
         width: parent.width / 2
         bbSource: "file:C:\\Projects\\BBtest.bin"
         value: "I_Can"
+        step: 2
     }
 }

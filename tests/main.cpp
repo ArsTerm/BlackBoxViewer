@@ -25,6 +25,8 @@ int main(int argc, char* argv[])
     qRegisterMetaType<size_t>("size_t");
 
     qmlRegisterType<BlackBoxModel>("BBViewer", 1, 0, "BBModel");
+    qmlRegisterUncreatableType<CanNamesFinder>(
+            "BBViewer", 1, 0, "CanNamesFinder", "Created by BBModel");
 
     QUrl component("qrc:/qml/main.qml");
     QQmlComponent comp(&engine, component);
@@ -50,7 +52,7 @@ int main(int argc, char* argv[])
         file.write((char*)&frame, sizeof(frame));
         frame.id = 84;
         frame.time = ciparser::BBTime(frame.time, 3);
-        val += 5;
+        val += 10;
     }
 
     file.close();

@@ -5,28 +5,21 @@ import QtQuick.Controls 2.15
 Item {
     property alias bbSource: model.source
     property alias value: model.value
+    property alias step: model.step
     property real topPadding: 50
     property real labelHeight: 50
 
-    TextInput {
+    NameInput {
         z: 10
-        text: value
         x: 5
         width: parent.width / 2
         height: topPadding
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignLeft
-        font.preferShaping: false
-        font.pixelSize: 25
-//      fontSizeMode: Text.Fit
-        color: "white"
-        onAccepted: {
-            if (model.contains(text)) {
-                value = text
-            } else {
-                text = value
-            }
+        name: value
+        onChoisedName: {
+            value = name
+            nameModel = null
         }
+        onBeginInput: nameModel = model.finder()
     }
 
     TextInput {
@@ -38,7 +31,7 @@ Item {
         horizontalAlignment: Text.AlignRight
         font.preferShaping: false
         font.pixelSize: 25
-//        fontSizeMode: Text.Fit
+        //        fontSizeMode: Text.Fit
         color: "white"
         onAccepted: {
             model.step = text
@@ -53,17 +46,28 @@ Item {
         height: parent.height - labelHeight - y
         orientation: ListView.Horizontal
         interactive: false
-        property real valueHeight: height / 255
+        property real valueHeight: height / model.maxVal / 2
 
         model: BBModel {
             id: model
+            maxVal: 256
         }
 
-        delegate: Rectangle {
-            color: "green"
-            y: view.height / 2 - display * view.valueHeight - height / 4
+        delegate: Item {
             width: view.width / 100
-            height: 3
+            Rectangle {
+                color: "green"
+                y: view.height / 2 - display * view.valueHeight - height / 4
+                width: (nextValue !== display) ? parent.width : parent.width
+                height: 3
+            }
+            Rectangle {
+                color: "green"
+                y: Math.floor(-(nextValue < display ? display * view.valueHeight : nextValue * view.valueHeight) + view.height / 2)
+                x: Math.min(1, parent.width - 3)
+                width: 3
+                height: Math.abs((display - nextValue)) * view.valueHeight + (nextValue < display ? view.valueHeight * 3 : 0)
+            }
         }
 
         MouseArea {
@@ -118,6 +122,76 @@ Item {
     }
 
     Text {
+        text: -model.maxVal
+        y: view.height + topPadding - 25
+        x: -50
+        width: 45
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
+        text: -model.maxVal / 2
+        y: view.height * 3 / 4 + topPadding - 25
+        x: -50
+        width: 45
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
+        text: model.maxVal
+        y: topPadding - 25
+        x: -43
+        width: 38
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
+        text: model.maxVal / 2
+        y: topPadding + view.height / 4 - 25
+        x: -43
+        width: 38
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
+        text: "0"
+        y: topPadding + view.height / 2 - 25
+        x: -40
+        width: 35
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
         text: model.position + 100 * model.step
         y: view.height + topPadding
         x: parent.width - width
@@ -140,5 +214,4 @@ Item {
         border.color: "white"
         border.width: 1
     }
-
 }

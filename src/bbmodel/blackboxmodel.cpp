@@ -47,7 +47,6 @@ void BlackBoxModel::setPosition(size_t newPos)
 {
     if (!handle || newPos == currPosition)
         return;
-    qDebug() << "Set position:" << newPos;
     if (padSize * m_step > handle->end()) {
         newPos = 0;
     } else if (newPos < handle->begin()) {
@@ -76,6 +75,13 @@ void BlackBoxModel::setStep(int value)
     }
 }
 
+QObject* BlackBoxModel::finder() const
+{
+    if (!handle)
+        return nullptr;
+    return new CanNamesFinder(handle->getContext());
+}
+
 bool BlackBoxModel::contains(const QString& value) const
 {
     if (!handle)
@@ -93,12 +99,24 @@ QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
     if (!values || !handle)
         return QVariant();
     int idx = index.row();
+    int nextIdx = idx == padSize - 1 ? idx : idx + 1;
 
     switch (role) {
     case Qt::DisplayRole:
         return (*values)[currPosition + idx * m_step];
+    case NextValue:
+        return (*values)[currPosition + nextIdx * m_step];
     }
     return QVariant();
 }
 
 BBVIEWER_END_NS
+
+QHash<int, QByteArray> bbviewer::BlackBoxModel::roleNames() const
+{
+    QHash<int, QByteArray> roles;
+    roles[Qt::DisplayRole] = "display";
+    roles[NextValue] = "nextValue";
+
+    return roles;
+}

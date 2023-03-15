@@ -39,6 +39,11 @@ public:
     ciparser::ValuesArray const&
     value(std::string const& name, size_t position);
 
+    ciparser::Context const& getContext() const
+    {
+        return context;
+    }
+
 private:
     struct Data {
         size_t endPosition = 0;

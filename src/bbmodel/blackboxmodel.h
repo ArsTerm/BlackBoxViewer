@@ -1,6 +1,7 @@
 #pragma once
 
 #include "blackboxviewer_global.h"
+#include "cannamesfinder.h"
 #include "contextpool.h"
 #include <Context/context.h>
 #include <QAbstractListModel>
@@ -18,7 +19,10 @@ class BlackBoxModel : public QAbstractListModel {
                        positionChanged)
     Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(int step READ step WRITE setStep NOTIFY stepChanged)
+    Q_PROPERTY(int maxVal READ maxVal WRITE setMaxVal NOTIFY maxValChanged)
 public:
+    enum Roles { NextValue = Qt::UserRole + 1 };
+
     BlackBoxModel();
 
     void setSource(QUrl const& source)
@@ -68,6 +72,21 @@ public:
 
     void setStep(int value);
 
+    int maxVal() const
+    {
+        return m_maxVal;
+    }
+
+    void setMaxVal(int maxVal)
+    {
+        if (m_maxVal != maxVal) {
+            m_maxVal = maxVal;
+            emit maxValChanged();
+        }
+    }
+
+    Q_INVOKABLE QObject* finder() const;
+
     Q_INVOKABLE bool contains(QString const& value) const;
 
 private:
@@ -78,6 +97,7 @@ private:
     ContextHandle* handle = nullptr;
     ciparser::ValuesArray const* values = nullptr;
     int m_step = 1;
+    int m_maxVal = 128;
     static constexpr size_t padSize = 100;
     static ContextPool cpool;
 
@@ -89,12 +109,14 @@ private:
 public:
     int rowCount(const QModelIndex& parent) const override;
     QVariant data(const QModelIndex& index, int role) const override;
+    QHash<int, QByteArray> roleNames() const override;
 
 signals:
     void sourceChanged();
     void positionChanged();
     void valueChanged();
     void stepChanged();
+    void maxValChanged();
 };
 
 BBVIEWER_END_NS
