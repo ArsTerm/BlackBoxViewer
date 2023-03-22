@@ -31,6 +31,29 @@ void BlackBoxModel::updateValue()
 {
     if (!handle)
         return;
+    auto type = handle->type(m_value.toStdString());
+    switch (type) {
+    case ciparser::Message::Int16:
+        setMaxVal(32768);
+        setMinVal(-32768);
+        break;
+    case ciparser::Message::Uint16:
+        setMaxVal(65536);
+        setMinVal(0);
+        break;
+    case ciparser::Message::Int8:
+        setMaxVal(128);
+        setMinVal(-128);
+        break;
+    case ciparser::Message::Uint8:
+        setMaxVal(256);
+        setMinVal(0);
+        break;
+    case ciparser::Message::Bit:
+        setMaxVal(1);
+        setMinVal(0);
+        break;
+    }
     updateValues();
     emit valueChanged();
 }
@@ -40,21 +63,6 @@ void BlackBoxModel::updateValues()
     beginResetModel();
     values = &handle->value(
             m_value.toStdString(), currPosition + padSize * m_step);
-    auto type = handle->type(m_value.toStdString());
-    switch (type) {
-    case ciparser::Message::Int16:
-    case ciparser::Message::Uint16:
-        setMaxVal(65536);
-        break;
-    case ciparser::Message::Int8:
-    case ciparser::Message::Uint8:
-        setMaxVal(256);
-        break;
-    case ciparser::Message::Bit:
-        setMaxVal(2);
-        break;
-    }
-
     endResetModel();
 }
 
@@ -102,6 +110,16 @@ bool BlackBoxModel::contains(const QString& value) const
     if (!handle)
         return false;
     return handle->contains(value.toStdString());
+}
+
+QString BlackBoxModel::positionToString(int position)
+{
+    ciparser::BBTime time(position);
+    auto result = QString(QStringLiteral("%1:%2:%3"))
+                          .arg((int)time.hour, 2, 10, QLatin1Char('0'))
+                          .arg((int)time.minutes, 2, 10, QLatin1Char('0'))
+                          .arg((int)time.seconds, 2, 10, QLatin1Char('0'));
+    return result;
 }
 
 int BlackBoxModel::rowCount(const QModelIndex&) const

@@ -12,7 +12,7 @@ Window {
         x: parent.width / 4
         width: parent.width / 2
         height: parent.height / 2
-        bbSource: "file:C:\\Projects\\BBtest.bin"
+        bbSource: "file:C:\\Projects\\03180511"
         value: "I_Can"
     }
 
@@ -21,7 +21,7 @@ Window {
         y: parent.height / 2 + 5
         height: parent.height / 2 - 5
         width: parent.width / 2
-        bbSource: "file:C:\\Projects\\BBtest.bin"
+        bbSource: "file:C:\\Projects\\03180511"
         value: "I_Can"
         step: 2
     }

@@ -3,6 +3,7 @@ import QtQuick 2.12
 Item {
     property alias name: input.text
     property alias nameModel: nameView.model
+    property alias active: inputTemp.focus
     signal beginInput
     signal choisedName(string name)
 
@@ -24,7 +25,7 @@ Item {
             anchors.fill: parent
             onClicked: {
                 inputTempRect.visible = true
-                inputTemp.forceActiveFocus()
+                inputTemp.focus = true
                 beginInput()
             }
         }
@@ -45,8 +46,10 @@ Item {
             font.preferShaping: false
             font.pixelSize: 25
             color: "black"
+            focus: false
             onFocusChanged: {
-                choisedName(name)
+                if (focus == false)
+                    choisedName(name)
             }
 
             onTextChanged: {

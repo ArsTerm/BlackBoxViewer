@@ -20,6 +20,7 @@ class BlackBoxModel : public QAbstractListModel {
     Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
     Q_PROPERTY(int step READ step WRITE setStep NOTIFY stepChanged)
     Q_PROPERTY(int maxVal READ maxVal WRITE setMaxVal NOTIFY maxValChanged)
+    Q_PROPERTY(int minVal READ minVal WRITE setMinVal NOTIFY minValChanged)
 public:
     enum Roles { NextValue = Qt::UserRole + 1 };
 
@@ -77,6 +78,11 @@ public:
         return m_maxVal;
     }
 
+    int minVal() const
+    {
+        return m_minVal;
+    }
+
     void setMaxVal(int maxVal)
     {
         if (m_maxVal != maxVal) {
@@ -85,8 +91,17 @@ public:
         }
     }
 
+    void setMinVal(int minVal)
+    {
+        if (m_minVal != minVal) {
+            m_minVal = minVal;
+            emit minValChanged();
+        }
+    }
+
     Q_INVOKABLE QObject* finder() const;
     Q_INVOKABLE bool contains(QString const& value) const;
+    Q_INVOKABLE static QString positionToString(int position);
 
 private:
     QUrl sourceFile;
@@ -96,8 +111,9 @@ private:
     ContextHandle* handle = nullptr;
     ciparser::ValuesArray const* values = nullptr;
     int m_step = 1;
-    int m_maxVal = 128;
-    static constexpr size_t padSize = 100;
+    int m_maxVal = 256;
+    int m_minVal = 0;
+    static constexpr size_t padSize = 128;
     static ContextPool cpool;
 
     void updateContext();
@@ -116,6 +132,7 @@ signals:
     void valueChanged();
     void stepChanged();
     void maxValChanged();
+    void minValChanged();
 };
 
 BBVIEWER_END_NS

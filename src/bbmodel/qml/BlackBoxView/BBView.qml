@@ -9,7 +9,15 @@ Item {
     property real topPadding: 50
     property real labelHeight: 50
 
+    function bound(min, max, val) {
+        return Math.min(max, Math.max(min, val))
+    }
+
+    property real valuesDiff: model.maxVal - model.minVal
+    property real verticalStep: valuesDiff / 4
+
     NameInput {
+        id: nameInput
         z: 10
         x: 5
         width: parent.width / 2
@@ -18,8 +26,15 @@ Item {
         onChoisedName: {
             value = name
             nameModel = null
+            if (viewMouse.containsMouse) {
+                view.focus = true
+            }
         }
-        onBeginInput: nameModel = model.finder()
+        onBeginInput: {
+            console.log("Begin input")
+            nameModel = model.finder()
+            console.log("End begin input")
+        }
     }
 
     TextInput {
@@ -45,7 +60,7 @@ Item {
         height: parent.height - labelHeight - y
         orientation: ListView.Horizontal
         interactive: false
-        property real valueHeight: height / model.maxVal / 2
+        property real valueHeight: height / (model.maxVal - model.minVal)
 
         model: BBModel {
             id: model
@@ -53,39 +68,136 @@ Item {
         }
 
         delegate: Item {
-            width: view.width / 100
+            width: view.width / 128
+            property BBModel model: ListView.view.model
             Rectangle {
+                id: itemRect
                 color: "green"
-                y: view.height / 2 - display * view.valueHeight - height / 4
-                width: (nextValue !== display) ? parent.width : parent.width
+                property real value: (display - model.minVal) * view.valueHeight
+                y: bound(0, view.height, view.height - value - height / 4)
+                width: parent.width
                 height: 3
             }
             Rectangle {
                 color: "green"
-                y: Math.floor(
-                       -(nextValue < display ? display * view.valueHeight : nextValue
-                                               * view.valueHeight) + view.height / 2)
+                y: bound(
+                       0, view.height, Math.floor(
+                           -(nextValue < display ? (display - model.minVal)
+                                                   * view.valueHeight : (nextValue - model.minVal)
+                                                   * view.valueHeight) + view.height))
                 x: Math.min(1, parent.width - 3)
                 width: 3
-                height: Math.abs((display - nextValue)) * view.valueHeight
-                        + (nextValue < display ? view.valueHeight * 3 : 0)
+                height: {
+                    if (y == 0) {
+                        if (nextValue > display)
+                            return itemRect.y
+                        if (nextValue < display)
+                            return Math.min((Math.min(display, model.maxVal) - nextValue) * view.valueHeight + 1.5, view.height);
+                        return 3
+                    }
+
+                    let result = Math.abs(
+                            (display - nextValue)) * view.valueHeight + (nextValue < display ? 1.5 : 0)
+                    if (result + y > view.height) {
+                        result -= (result + y) - view.height
+                    }
+                    return Math.min(result, view.height)
+                }
             }
         }
 
-        MouseArea {
-            anchors.fill: parent
-            property real xBegin
-            onPressed: xBegin = mouse.x
-            onPositionChanged: {
-                let positionStep = Math.round((mouse.x - xBegin) / 2)
-                if (Math.abs(positionStep) > 0) {
-                    xBegin = mouse.x
-                }
+        Keys.onPressed: event => {
+                            if (event.key === Qt.Key_Shift) {
+                                viewMouse.altWheel = true
+                            }
+                        }
+        Keys.onReleased: event => {
+                             if (event.key === Qt.Key_Shift) {
+                                 viewMouse.altWheel = false
+                             }
+                         }
 
-                if (model.position + positionStep <= 0) {
-                    model.position = 0
+        MouseArea {
+            id: viewMouse
+            anchors.fill: parent
+            property bool altWheel: false
+            property real xBegin: -1
+            property real yBegin
+            hoverEnabled: true
+            onPressed: {
+                nameInput.active = false
+                view.focus = true
+                xBegin = mouse.x
+                yBegin = mouse.y
+            }
+            onReleased: {
+                xBegin = -1
+            }
+
+            onEntered: {
+                if (!nameInput.active)
+                    view.focus = true
+            }
+            onExited: view.focus = false
+            onPositionChanged: {
+                if (xBegin < 0)
+                    return
+                let xDiff = mouse.x - xBegin
+                let yDiff = mouse.y - yBegin
+                if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                    let positionStep = Math.round((mouse.x - xBegin) / 2)
+                    if (Math.abs(positionStep) > 0) {
+                        xBegin = mouse.x
+                    }
+                    positionStep *= model.step
+
+                    if (model.position + positionStep <= 0) {
+                        model.position = 0
+                    } else {
+                        model.position += positionStep
+                    }
                 } else {
-                    model.position += positionStep
+                    let yStep = Math.round(mouse.y - yBegin)
+                    if (Math.abs(yStep) > 0) {
+                        yBegin = mouse.y
+                    }
+
+                    if (yStep < 0) {
+                        if (model.minVal > -65536 && model.maxVal < 65536) {
+                            model.minVal += Math.round(yStep)
+                            model.maxVal += Math.round(yStep)
+                        }
+                    } else {
+                        if (model.minVal > -65536 && model.maxVal < 65536) {
+                            model.minVal += Math.round(yStep)
+                            model.maxVal += Math.round(yStep)
+                        }
+                    }
+                }
+            }
+            onWheel: {
+                if (altWheel) {
+                    if (wheel.angleDelta.y < 0) {
+                        if (model.step > 1) {
+                            model.step--
+                        }
+                    } else {
+                        if (model.step < 1000) {
+                            model.step++
+                        }
+                    }
+                } else {
+                    if (wheel.angleDelta.y < 0) {
+                        if (model.maxVal > 1) {
+                            model.maxVal /= 2
+                            model.minVal /= 2
+                        }
+                    } else {
+                        if (model.maxVal < 65536) {
+                            model.maxVal *= 2
+                            model.minVal *= 2
+                        }
+                    }
                 }
             }
         }
@@ -111,55 +223,41 @@ Item {
     }
 
     TextInput {
-        text: model.position
+        text: model.positionToString(model.position)
         y: view.height + topPadding
         height: parent.labelHeight
         width: height * 2
         font.preferShaping: false
         font.pixelSize: 25
-   //     fontSizeMode: Text.Fit
+        //     fontSizeMode: Text.Fit
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
         color: "white"
         onAccepted: {
             model.position = text
-            text = Qt.binding(() => model.position);
+            text = Qt.binding(() => model.position)
         }
     }
 
     Text {
-        text: -model.maxVal
-        y: view.height + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        text: model.positionToString(model.position + 128 * model.step)
+        y: view.height + topPadding
+        x: view.width - width
+        height: parent.labelHeight
+        width: height * 2
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
         verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignRight
-        color: "white"
-    }
-
-    Text {
-        text: -model.maxVal / 2
-        y: view.height * 3 / 4 + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
-        font.preferShaping: false
-        font.pixelSize: 25
-        fontSizeMode: Text.Fit
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignRight
+        horizontalAlignment: Text.AlignLeft
         color: "white"
     }
 
     Text {
         text: model.maxVal
         y: topPadding - 25
-        x: -43
-        width: 38
+        x: -50
+        width: 45
         height: 50
         font.preferShaping: false
         font.pixelSize: 25
@@ -170,10 +268,10 @@ Item {
     }
 
     Text {
-        text: model.maxVal / 2
-        y: topPadding + view.height / 4 - 25
-        x: -43
-        width: 38
+        text: model.maxVal - verticalStep
+        y: parent.height / 6 + topPadding - 25
+        x: -50
+        width: 45
         height: 50
         font.preferShaping: false
         font.pixelSize: 25
@@ -184,10 +282,10 @@ Item {
     }
 
     Text {
-        text: "0"
-        y: topPadding + view.height / 2 - 25
-        x: -40
-        width: 35
+        text: model.maxVal - verticalStep * 2
+        y: parent.height / 6 * 2 + topPadding - 25
+        x: -50
+        width: 45
         height: 50
         font.preferShaping: false
         font.pixelSize: 25
@@ -198,11 +296,25 @@ Item {
     }
 
     Text {
-        text: model.position + 100 * model.step
-        y: view.height + topPadding
-        x: parent.width - width
-        height: parent.labelHeight
-        width: height * 2
+        text: model.maxVal - verticalStep * 3
+        y: parent.height / 6 * 3 + topPadding - 25
+        x: -50
+        width: 45
+        height: 50
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
+    }
+
+    Text {
+        text: model.minVal
+        y: parent.height / 6 * 4 + topPadding - 25
+        x: -50
+        width: 45
+        height: 50
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
