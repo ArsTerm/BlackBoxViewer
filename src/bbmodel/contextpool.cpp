@@ -58,6 +58,12 @@ ContextHandle::value(const std::string& name, size_t position)
     return val.array;
 }
 
+ciparser::Message::Type ContextHandle::type(const std::string& name)
+{
+    auto handle = context.handle(name);
+    return handle.type();
+}
+
 ContextHandle* ContextPool::get(QString const& bbName, QString const& ciName)
 {
     auto it = std::find_if(

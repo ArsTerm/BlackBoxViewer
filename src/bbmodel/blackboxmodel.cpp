@@ -40,6 +40,21 @@ void BlackBoxModel::updateValues()
     beginResetModel();
     values = &handle->value(
             m_value.toStdString(), currPosition + padSize * m_step);
+    auto type = handle->type(m_value.toStdString());
+    switch (type) {
+    case ciparser::Message::Int16:
+    case ciparser::Message::Uint16:
+        setMaxVal(65536);
+        break;
+    case ciparser::Message::Int8:
+    case ciparser::Message::Uint8:
+        setMaxVal(256);
+        break;
+    case ciparser::Message::Bit:
+        setMaxVal(2);
+        break;
+    }
+
     endResetModel();
 }
 

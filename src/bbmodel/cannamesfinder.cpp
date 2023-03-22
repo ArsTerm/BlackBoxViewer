@@ -61,8 +61,9 @@ void bbviewer::CanNamesFinder::filterTemplateData()
     for (size_t i = 0; i < fullNames.size(); i++) {
         auto& str = fullNames[i];
         bool find = true;
+        auto cmpSize = std::min(str.size(), currTemplate.size());
 
-        for (size_t j = 0; j < currTemplate.size(); j++) {
+        for (size_t j = 0; j < cmpSize; j++) {
             if (str[j] != currTemplate[j]) {
                 find = false;
             }

@@ -35,17 +35,6 @@ Item {
         color: "white"
         onAccepted: {
             model.step = text
-            console.log("Model step:", model.step)
-        }
-    }
-
-    MouseArea {
-        x: parent.width / 2 - width / 2
-        width: 100
-        height: 50
-        onClicked: {
-            console.log("Set sign");
-            model.setSign(true)
         }
     }
 
@@ -121,17 +110,21 @@ Item {
         }
     }
 
-    Text {
+    TextInput {
         text: model.position
         y: view.height + topPadding
         height: parent.labelHeight
         width: height * 2
         font.preferShaping: false
         font.pixelSize: 25
-        fontSizeMode: Text.Fit
+   //     fontSizeMode: Text.Fit
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
         color: "white"
+        onAccepted: {
+            model.position = text
+            text = Qt.binding(() => model.position);
+        }
     }
 
     Text {

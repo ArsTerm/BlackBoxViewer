@@ -39,6 +39,8 @@ public:
     ciparser::ValuesArray const&
     value(std::string const& name, size_t position);
 
+    ciparser::Message::Type type(std::string const& name);
+
     ciparser::Context const& getContext() const
     {
         return context;

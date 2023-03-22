@@ -8,6 +8,7 @@ Item {
 
     onChoisedName: {
         inputTempRect.visible = false
+        inputTemp.text = ""
     }
 
     Text {
