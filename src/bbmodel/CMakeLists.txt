@@ -13,6 +13,6 @@ target_link_libraries(${target_name} PRIVATE CanInitParser)
 
 target_include_directories(${target_name} PUBLIC ${CMAKE_SOURCE_DIR}/external/CanInitParser/src/CanInitParser)
 
-set(QML_IMPORT_PATH "${CMAKE_CURRENT_LIST_DIR}" CACHE STRING "QT extra import path")
+set(QML_IMPORT_PATH "${CMAKE_CURRENT_LIST_DIR}/qml" CACHE STRING "QT extra import path")
 
 set_compile_options(${target_name})

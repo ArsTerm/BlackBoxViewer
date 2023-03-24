@@ -1,4 +1,5 @@
 #include "blackboxmodel.h"
+#include "cannamesfinder.h"
 #include <Parser/caninitparser.h>
 #include <QDebug>
 #include <QFile>
@@ -13,17 +14,47 @@ BlackBoxModel::BlackBoxModel()
 {
 }
 
+const QUrl& BlackBoxModel::canMes() const
+{
+    return m_canMes;
+}
+
+void BlackBoxModel::setCanMes(const QUrl& canMes)
+{
+    if (m_canMes != canMes) {
+        m_canMes = canMes;
+        updateContext();
+        emit canMesChanged();
+    }
+}
+
+void BlackBoxModel::setSource(const QUrl& source)
+{
+    if (sourceFile != source) {
+        sourceFile = source;
+        updateContext();
+        emit sourceChanged();
+    }
+}
+
+const QUrl& BlackBoxModel::source() const
+{
+    return sourceFile;
+}
+
 void BlackBoxModel::updateContext()
 {
     beginResetModel();
+    if (sourceFile.isEmpty() || m_canMes.isEmpty()) {
+        endResetModel();
+        return;
+    }
     if (handle) {
         cpool.free(handle);
     }
-    handle = cpool.get(
-            sourceFile.toLocalFile(), QStringLiteral(CANINIT_TEST_PATH));
+    handle = cpool.get(sourceFile.toLocalFile(), m_canMes.toLocalFile());
     endResetModel();
 
-    emit sourceChanged();
     setPosition(handle->begin());
 }
 
@@ -122,6 +153,13 @@ QString BlackBoxModel::positionToString(int position)
     return result;
 }
 
+int BlackBoxModel::valueAt(int idx) const
+{
+    if (!values)
+        return 0;
+    return (*values)[currPosition + idx * m_step];
+}
+
 int BlackBoxModel::rowCount(const QModelIndex&) const
 {
     return padSize;
@@ -129,7 +167,7 @@ int BlackBoxModel::rowCount(const QModelIndex&) const
 
 QVariant BlackBoxModel::data(const QModelIndex& index, int role) const
 {
-    if (!values || !handle)
+    if (!values)
         return QVariant();
     int idx = index.row();
     int nextIdx = idx == padSize - 1 ? idx : idx + 1;

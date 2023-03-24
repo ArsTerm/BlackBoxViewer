@@ -4,6 +4,7 @@ import QtQuick.Controls 2.15
 
 Item {
     property alias bbSource: model.source
+    property alias canMes: model.canMes
     property alias value: model.value
     property alias step: model.step
     property real topPadding: 50
@@ -31,9 +32,7 @@ Item {
             }
         }
         onBeginInput: {
-            console.log("Begin input")
             nameModel = model.finder()
-            console.log("End begin input")
         }
     }
 
@@ -46,11 +45,22 @@ Item {
         horizontalAlignment: Text.AlignRight
         font.preferShaping: false
         font.pixelSize: 25
-        //        fontSizeMode: Text.Fit
         color: "white"
         onAccepted: {
             model.step = text
         }
+    }
+
+    Text {
+        text: "Значение: " + model.valueAt(Math.floor(viewMouse.mouseX / (view.width / 128)))
+        x: parent.width / 2.5
+        width: parent.width / 4
+        height: topPadding
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignHCenter
+        font.preferShaping: false
+        font.pixelSize: 25
+        color: "white"
     }
 
     ListView {
@@ -92,12 +102,16 @@ Item {
                         if (nextValue > display)
                             return itemRect.y
                         if (nextValue < display)
-                            return Math.min((Math.min(display, model.maxVal) - nextValue) * view.valueHeight + 1.5, view.height);
+                            return Math.min(
+                                        (Math.min(
+                                             display,
+                                             model.maxVal) - nextValue) * view.valueHeight + 1.5,
+                                        view.height)
                         return 3
                     }
 
-                    let result = Math.abs(
-                            (display - nextValue)) * view.valueHeight + (nextValue < display ? 1.5 : 0)
+                    let result = Math.abs((display - nextValue))
+                        * view.valueHeight + (nextValue < display ? 1.5 : 0)
                     if (result + y > view.height) {
                         result -= (result + y) - view.height
                     }
@@ -124,6 +138,102 @@ Item {
             property real xBegin: -1
             property real yBegin
             hoverEnabled: true
+
+            function updateValues(mouseY) {
+                let step = Math.round(mouseY - yBegin)
+                let k = valuesDiff / 192
+
+                yBegin = mouseY
+                let newMin = Math.round(model.minVal + Math.round(step) * k)
+                let newMax = Math.round(model.maxVal + Math.round(step) * k)
+
+                if (step < 0) {
+                    if (newMin < -65536) {
+                        let diff = model.maxVal - model.minVal
+                        model.minVal = -65536
+                        model.maxVal = -65536 + diff
+                    } else {
+                        model.minVal = newMin
+                        model.maxVal = newMax
+                    }
+                } else {
+                    if (newMax > 65536) {
+                        let diff = newMax - 65536
+                        model.maxVal = 65536
+                        model.minVal = newMin - diff
+                    } else {
+                        model.maxVal = newMax
+                        model.minVal = newMin
+                    }
+                }
+            }
+
+            function centerTo(value) {
+                let currCenter = model.maxVal - verticalStep * 2
+                let diff = value - currCenter
+                if (diff > 0) {
+                    let newMax = model.maxVal + diff
+                    let newMin = model.minVal + diff
+                    if (newMax > 65536) {
+                        let maxDiff = newMax - 65536
+                        model.maxVal = 65536
+                        model.minVal = model.minVal + diff - maxDiff
+                    } else if (newMin < -65536) {
+                        let minDiff = model.maxVal - model.minVal
+                        model.minVal = -65536
+                        model.maxVal = model.maxVal - minDiff
+                    } else {
+                        model.maxVal = newMax
+                        model.minVal = model.minVal + diff
+                    }
+                } else {
+                    let newMin = model.minVal + diff
+                    if (newMin < -65536) {
+                        let minDiff = -model.minVal + model.maxVal
+                        model.minVal = -65536
+                        model.maxVal = -65536 + minDiff
+                    } else {
+                        model.maxVal = model.maxVal + diff
+                        model.minVal = newMin
+                    }
+                }
+            }
+
+            function updateStep(mouseX) {
+                let step = Math.round(mouseX - xBegin)
+                let k = 0.5
+                let positionStep = -Math.round(step * k)
+
+                xBegin = mouseX
+                positionStep *= model.step
+
+                model.position = Math.max(0, model.position + positionStep)
+            }
+
+            function updateScale(delta) {
+                if (delta > 0) {
+                    if (model.maxVal > 1) {
+                        model.maxVal /= 2
+                        model.minVal /= 2
+                        centerTo(model.maxVal - mouseY / viewMouse.height * verticalStep * 4)
+                    } else {
+                        model.maxVal = 1
+                        model.minVal = -1
+                    }
+                } else {
+                    let newMax = model.maxVal * 2
+                    let newMin = model.minVal * 2
+                    if (newMax <= 65536 && newMin >= -65536) {
+                        model.maxVal = newMax
+                        model.minVal = newMin
+                        centerTo(model.maxVal - mouseY / viewMouse.height * verticalStep * 4)
+                    } else {
+                        model.maxVal = 65536
+                        model.minVal = -65536
+                    }
+                }
+            }
+
             onPressed: {
                 nameInput.active = false
                 view.focus = true
@@ -144,40 +254,16 @@ Item {
                     return
                 let xDiff = mouse.x - xBegin
                 let yDiff = mouse.y - yBegin
+
                 if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                    let positionStep = Math.round((mouse.x - xBegin) / 2)
-                    if (Math.abs(positionStep) > 0) {
-                        xBegin = mouse.x
-                    }
-                    positionStep *= model.step
-
-                    if (model.position + positionStep <= 0) {
-                        model.position = 0
-                    } else {
-                        model.position += positionStep
-                    }
+                    updateStep(mouse.x)
                 } else {
-                    let yStep = Math.round(mouse.y - yBegin)
-                    if (Math.abs(yStep) > 0) {
-                        yBegin = mouse.y
-                    }
-
-                    if (yStep < 0) {
-                        if (model.minVal > -65536 && model.maxVal < 65536) {
-                            model.minVal += Math.round(yStep)
-                            model.maxVal += Math.round(yStep)
-                        }
-                    } else {
-                        if (model.minVal > -65536 && model.maxVal < 65536) {
-                            model.minVal += Math.round(yStep)
-                            model.maxVal += Math.round(yStep)
-                        }
-                    }
+                    updateValues(mouse.y)
                 }
             }
             onWheel: {
                 if (altWheel) {
-                    if (wheel.angleDelta.y < 0) {
+                    if (wheel.angleDelta.y > 0) {
                         if (model.step > 1) {
                             model.step--
                         }
@@ -187,19 +273,18 @@ Item {
                         }
                     }
                 } else {
-                    if (wheel.angleDelta.y < 0) {
-                        if (model.maxVal > 1) {
-                            model.maxVal /= 2
-                            model.minVal /= 2
-                        }
-                    } else {
-                        if (model.maxVal < 65536) {
-                            model.maxVal *= 2
-                            model.minVal *= 2
-                        }
-                    }
+                    updateScale(wheel.angleDelta.y)
                 }
             }
+        }
+
+        Rectangle {
+            id: valueHandle
+            y: 0
+            x: (Math.floor(viewMouse.mouseX / width) - 1) * width
+            color: "#A0AAAAAA"
+            width: view.width / 128
+            height: view.height
         }
 
         Rectangle {

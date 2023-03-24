@@ -1,7 +1,6 @@
 #pragma once
 
 #include "blackboxviewer_global.h"
-#include "cannamesfinder.h"
 #include "contextpool.h"
 #include <Context/context.h>
 #include <QAbstractListModel>
@@ -15,6 +14,7 @@ class BlackBoxModel : public QAbstractListModel {
     Q_OBJECT
 
     Q_PROPERTY(QUrl source READ source WRITE setSource NOTIFY sourceChanged)
+    Q_PROPERTY(QUrl canMes READ canMes WRITE setCanMes NOTIFY canMesChanged)
     Q_PROPERTY(size_t position READ position WRITE setPosition NOTIFY
                        positionChanged)
     Q_PROPERTY(QString value READ value WRITE setValue NOTIFY valueChanged)
@@ -26,18 +26,12 @@ public:
 
     BlackBoxModel();
 
-    void setSource(QUrl const& source)
-    {
-        if (sourceFile != source) {
-            sourceFile = source;
-            updateContext();
-        }
-    }
+    QUrl const& canMes() const;
+    void setCanMes(QUrl const& canMes);
 
-    QUrl const& source() const
-    {
-        return sourceFile;
-    }
+    void setSource(QUrl const& source);
+
+    QUrl const& source() const;
 
     size_t position() const
     {
@@ -102,8 +96,10 @@ public:
     Q_INVOKABLE QObject* finder() const;
     Q_INVOKABLE bool contains(QString const& value) const;
     Q_INVOKABLE static QString positionToString(int position);
+    Q_INVOKABLE int valueAt(int idx) const;
 
 private:
+    QUrl m_canMes;
     QUrl sourceFile;
     QFile sourceFileObj;
     size_t currPosition = -1;
@@ -128,6 +124,7 @@ public:
 
 signals:
     void sourceChanged();
+    void canMesChanged();
     void positionChanged();
     void valueChanged();
     void stepChanged();

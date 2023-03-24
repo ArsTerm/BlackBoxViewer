@@ -13,6 +13,7 @@ Window {
         width: parent.width / 2
         height: parent.height / 2
         bbSource: "file:C:\\Projects\\03180511"
+        canMes: "file:C:\\Projects\\BlackBoxViewer\\external\\CanInitParser\\CanInit.h"
         value: "I_Can"
     }
 
@@ -22,6 +23,7 @@ Window {
         height: parent.height / 2 - 5
         width: parent.width / 2
         bbSource: "file:C:\\Projects\\03180511"
+        canMes: "file:C:\\Projects\\BlackBoxViewer\\external\\CanInitParser\\CanInit.h"
         value: "I_Can"
         step: 2
     }
