@@ -20,6 +20,7 @@ Item {
         horizontalAlignment: Text.AlignLeft
         font.preferShaping: false
         font.pixelSize: 25
+        fontSizeMode: Text.Fit
         color: "white"
         MouseArea {
             anchors.fill: parent
@@ -44,7 +45,7 @@ Item {
             verticalAlignment: Text.AlignVCenter
             horizontalAlignment: Text.AlignLeft
             font.preferShaping: false
-            font.pixelSize: 25
+            font.pixelSize: height * 0.75
             color: "black"
             focus: false
             onFocusChanged: {

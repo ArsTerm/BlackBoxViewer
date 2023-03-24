@@ -8,23 +8,12 @@ Window {
     color: "black"
     visible: true
 
-    BBView {
-        x: parent.width / 4
-        width: parent.width / 2
-        height: parent.height / 2
-        bbSource: "file:C:\\Projects\\03180511"
-        canMes: "file:C:\\Projects\\BlackBoxViewer\\external\\CanInitParser\\CanInit.h"
-        value: "I_Can"
-    }
 
-    BBView {
-        x: parent.width / 4
-        y: parent.height / 2 + 5
-        height: parent.height / 2 - 5
-        width: parent.width / 2
+    BBGroup {
+        width: parent.width
+        height: parent.height
         bbSource: "file:C:\\Projects\\03180511"
         canMes: "file:C:\\Projects\\BlackBoxViewer\\external\\CanInitParser\\CanInit.h"
-        value: "I_Can"
-        step: 2
+        defaultValue: "I_Can"
     }
 }

@@ -3,5 +3,6 @@
         <file>qml/BlackBoxView/BBView.qml</file>
         <file>qml/BlackBoxView/qmldir</file>
         <file>qml/BlackBoxView/NameInput.qml</file>
+        <file>qml/BlackBoxView/BBGroup.qml</file>
     </qresource>
 </RCC>

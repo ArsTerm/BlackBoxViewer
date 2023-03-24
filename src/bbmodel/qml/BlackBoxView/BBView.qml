@@ -7,8 +7,11 @@ Item {
     property alias canMes: model.canMes
     property alias value: model.value
     property alias step: model.step
-    property real topPadding: 50
-    property real labelHeight: 50
+    property alias position: model.position
+    property int currentValue: 0
+    property real topPadding: height * 0.1
+    property real botPadding: height * 0.1
+    property real leftPadding: width * 0.1
 
     function bound(min, max, val) {
         return Math.min(max, Math.max(min, val))
@@ -20,8 +23,8 @@ Item {
     NameInput {
         id: nameInput
         z: 10
-        x: 5
-        width: parent.width / 2
+        x: leftPadding
+        width: leftPadding
         height: topPadding
         name: value
         onChoisedName: {
@@ -44,7 +47,7 @@ Item {
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignRight
         font.preferShaping: false
-        font.pixelSize: 25
+        font.pixelSize: height
         color: "white"
         onAccepted: {
             model.step = text
@@ -52,13 +55,14 @@ Item {
     }
 
     Text {
-        text: "Значение: " + model.valueAt(Math.floor(viewMouse.mouseX / (view.width / 128)))
+        text: "Значение: " + model.valueAt(currentValue)
         x: parent.width / 2.5
         width: parent.width / 4
         height: topPadding
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignHCenter
         font.preferShaping: false
+        fontSizeMode: Text.Fit
         font.pixelSize: 25
         color: "white"
     }
@@ -66,8 +70,9 @@ Item {
     ListView {
         id: view
         y: topPadding
-        width: parent.width
-        height: parent.height - labelHeight - y
+        x: leftPadding
+        width: parent.width - leftPadding
+        height: parent.height - botPadding - y
         orientation: ListView.Horizontal
         interactive: false
         property real valueHeight: height / (model.maxVal - model.minVal)
@@ -95,7 +100,7 @@ Item {
                            -(nextValue < display ? (display - model.minVal)
                                                    * view.valueHeight : (nextValue - model.minVal)
                                                    * view.valueHeight) + view.height))
-                x: Math.min(1, parent.width - 3)
+                x: parent.width - width
                 width: 3
                 height: {
                     if (y == 0) {
@@ -138,6 +143,10 @@ Item {
             property real xBegin: -1
             property real yBegin
             hoverEnabled: true
+
+            onMouseXChanged: {
+                currentValue = Math.floor(viewMouse.mouseX / (view.width / 128))
+            }
 
             function updateValues(mouseY) {
                 let step = Math.round(mouseY - yBegin)
@@ -211,11 +220,12 @@ Item {
             }
 
             function updateScale(delta) {
+                let currVal = model.maxVal - mouseY / viewMouse.height * verticalStep * 4
                 if (delta > 0) {
                     if (model.maxVal > 1) {
                         model.maxVal /= 2
                         model.minVal /= 2
-                        centerTo(model.maxVal - mouseY / viewMouse.height * verticalStep * 4)
+                        centerTo(currVal)
                     } else {
                         model.maxVal = 1
                         model.minVal = -1
@@ -226,7 +236,7 @@ Item {
                     if (newMax <= 65536 && newMin >= -65536) {
                         model.maxVal = newMax
                         model.minVal = newMin
-                        centerTo(model.maxVal - mouseY / viewMouse.height * verticalStep * 4)
+                        centerTo(currVal)
                     } else {
                         model.maxVal = 65536
                         model.minVal = -65536
@@ -281,7 +291,7 @@ Item {
         Rectangle {
             id: valueHandle
             y: 0
-            x: (Math.floor(viewMouse.mouseX / width) - 1) * width
+            x: (currentValue - 1) * width
             color: "#A0AAAAAA"
             width: view.width / 128
             height: view.height
@@ -307,28 +317,11 @@ Item {
         }
     }
 
-    TextInput {
-        text: model.positionToString(model.position)
-        y: view.height + topPadding
-        height: parent.labelHeight
-        width: height * 2
-        font.preferShaping: false
-        font.pixelSize: 25
-        //     fontSizeMode: Text.Fit
-        verticalAlignment: Text.AlignVCenter
-        horizontalAlignment: Text.AlignLeft
-        color: "white"
-        onAccepted: {
-            model.position = text
-            text = Qt.binding(() => model.position)
-        }
-    }
-
     Text {
-        text: model.positionToString(model.position + 128 * model.step)
+        text: model.positionToString(model.position)
+        x: leftPadding
         y: view.height + topPadding
-        x: view.width - width
-        height: parent.labelHeight
+        height: botPadding
         width: height * 2
         font.preferShaping: false
         font.pixelSize: 25
@@ -336,14 +329,31 @@ Item {
         verticalAlignment: Text.AlignVCenter
         horizontalAlignment: Text.AlignLeft
         color: "white"
+//        onAccepted: {
+//            model.position = text
+//            text = Qt.binding(() => model.position)
+//        }
+    }
+
+    Text {
+        text: model.positionToString(model.position + 128 * model.step)
+        y: view.height + topPadding
+        x: view.width + leftPadding - width
+        height: botPadding
+        width: height * 2
+        font.preferShaping: false
+        font.pixelSize: 25
+        fontSizeMode: Text.Fit
+        verticalAlignment: Text.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+        color: "white"
     }
 
     Text {
         text: model.maxVal
-        y: topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        y: topPadding - height / 2
+        width: leftPadding - leftPadding * 0.05
+        height: botPadding
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
@@ -354,10 +364,9 @@ Item {
 
     Text {
         text: model.maxVal - verticalStep
-        y: parent.height / 6 + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        y: topPadding - height / 2 + view.height / 4
+        width: leftPadding - leftPadding * 0.05
+        height: botPadding
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
@@ -368,10 +377,9 @@ Item {
 
     Text {
         text: model.maxVal - verticalStep * 2
-        y: parent.height / 6 * 2 + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        y: view.height / 2 + topPadding - height / 2
+        width: leftPadding - leftPadding * 0.05
+        height: botPadding
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
@@ -382,10 +390,9 @@ Item {
 
     Text {
         text: model.maxVal - verticalStep * 3
-        y: parent.height / 6 * 3 + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        y: view.height * 3 / 4 + topPadding - height / 2
+        width: leftPadding - leftPadding * 0.05
+        height: botPadding
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
@@ -396,10 +403,9 @@ Item {
 
     Text {
         text: model.minVal
-        y: parent.height / 6 * 4 + topPadding - 25
-        x: -50
-        width: 45
-        height: 50
+        y: view.height + topPadding - height / 2
+        width: leftPadding - leftPadding * 0.05
+        height: botPadding
         font.preferShaping: false
         font.pixelSize: 25
         fontSizeMode: Text.Fit
@@ -410,9 +416,10 @@ Item {
 
     Rectangle {
         z: -1
+        x: leftPadding
         y: topPadding
         color: "black"
-        width: parent.width
+        width: parent.width - x
         height: view.height + 1
         border.color: "white"
         border.width: 1

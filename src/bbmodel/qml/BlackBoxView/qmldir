@@ -1,2 +1,3 @@
 module BlackBoxView
 BBView 1.0 BBView.qml
+BBGroup 1.0 BBGroup.qml

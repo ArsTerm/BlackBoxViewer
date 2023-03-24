@@ -36,7 +36,12 @@ int main(int argc, char* argv[])
     QUrl component(QStringLiteral("qrc:/qml/main.qml"));
     QQmlComponent comp(&engine, component);
 
-    comp.create();
+    auto obj = comp.create();
+    if (!obj) {
+        for (auto err : comp.errors()) {
+            qDebug() << err;
+        }
+    }
 
     return app.exec();
 }
