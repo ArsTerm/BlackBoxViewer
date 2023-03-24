@@ -1,7 +1,9 @@
 #include "contextpool.h"
 #include <Parser/caninitparser.h>
+#include <Parser/parsenode.h>
 #include <QDebug>
 #include <Visitor/caninitvisitor.h>
+#include <Visitor/nodes/astnode.h>
 
 BBVIEWER_BEGIN_NS
 
@@ -22,12 +24,16 @@ ContextHandle::ContextHandle(QString const& bbName, QString const& ciName)
 
     ciparser::CanInitVisitor visitor;
 
-    visitor.visit(parser.parse());
+    auto parseNode = parser.parse();
+    auto astNode = visitor.visit(parseNode);
 
     auto bbdata = (ciparser::BBFrame*)bbFile.map(0, bbFile.size());
 
     new (&context) ciparser::Context(
             bbdata, bbFile.size() / sizeof(*bbdata), visitor.get_ids());
+
+    delete parseNode;
+    delete astNode;
 }
 
 bool ContextHandle::contains(const std::string& value)
