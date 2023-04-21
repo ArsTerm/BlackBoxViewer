@@ -5,6 +5,8 @@
 #include <Visitor/caninitvisitor.h>
 #include <Visitor/nodes/astnode.h>
 
+#include <compiler.h>
+
 BBVIEWER_BEGIN_NS
 
 ContextHandle::ContextHandle(QString const& bbName, QString const& ciName)
@@ -26,6 +28,9 @@ ContextHandle::ContextHandle(QString const& bbName, QString const& ciName)
 
     auto parseNode = parser.parse();
     auto astNode = visitor.visit(parseNode);
+
+    cicompiler::Compiler compiler;
+    compiler.parseSet(visitor.get_ids(), "mycompile.json");
 
     auto bbdata = (ciparser::BBFrame*)bbFile.map(0, bbFile.size());
 
